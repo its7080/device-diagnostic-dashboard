@@ -38,10 +38,11 @@
     .stat .label { color: var(--muted); font-size: .86rem; }
     .stat .value { font-weight: 700; margin-top: 4px; }
 
-    .keyboard-shell { background: #0b0f17; border-radius: 14px; border: 1px solid rgba(148,163,184,.18); padding: 14px; }
+    .keyboard-shell { background: #0b0f17; border-radius: 14px; border: 1px solid rgba(148,163,184,.18); padding: 14px; overflow-x:auto; }
     .keyboard { display: flex; flex-direction: column; gap: 8px; user-select: none; }
-    .row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+    .row { display: flex; gap: 8px; justify-content: center; flex-wrap: nowrap; }
     .key {
+        flex: 0 0 auto;
         min-width: 42px; padding: 10px 9px; text-align: center; border-radius: 8px;
         border: 1px solid #2e3a50; color: #dbeafe;
         background: linear-gradient(180deg, #293548, #151d2c); box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 4px 8px rgba(0,0,0,.32);
@@ -68,7 +69,6 @@
     .counts { margin-top: 12px; color: var(--muted); font-size: .92rem; }
     @media (max-width: 900px) {
         .stats { grid-template-columns: 1fr; }
-        .key.space { min-width: 180px; }
     }
     </style>
 </head>
@@ -100,7 +100,7 @@
             <div class="row"><div class="key wide" data-code="CapsLock">Caps</div><div class="key" data-code="KeyA">A</div><div class="key" data-code="KeyS">S</div><div class="key" data-code="KeyD">D</div><div class="key" data-code="KeyF">F</div><div class="key" data-code="KeyG">G</div><div class="key" data-code="KeyH">H</div><div class="key" data-code="KeyJ">J</div><div class="key" data-code="KeyK">K</div><div class="key" data-code="KeyL">L</div><div class="key" data-code="Semicolon">;</div><div class="key" data-code="Quote">'</div><div class="key wide" data-code="Enter">Enter</div><div class="key" data-code="Numpad4">4</div><div class="key" data-code="Numpad5">5</div><div class="key" data-code="Numpad6">6</div></div>
             <div class="row"><div class="key wide" data-code="ShiftLeft">Shift</div><div class="key" data-code="KeyZ">Z</div><div class="key" data-code="KeyX">X</div><div class="key" data-code="KeyC">C</div><div class="key" data-code="KeyV">V</div><div class="key" data-code="KeyB">B</div><div class="key" data-code="KeyN">N</div><div class="key" data-code="KeyM">M</div><div class="key" data-code="Comma">,</div><div class="key" data-code="Period">.</div><div class="key" data-code="Slash">/</div><div class="key wide" data-code="ShiftRight">Shift</div><div class="key" data-code="ArrowUp">↑</div><div class="key" data-code="Numpad1">1</div><div class="key" data-code="Numpad2">2</div><div class="key" data-code="Numpad3">3</div><div class="key tall" data-code="NumpadEnter">Enter</div></div>
             <div class="row"><div class="key" data-code="ControlLeft">Ctrl</div><div class="key" data-code="MetaLeft">Win</div><div class="key" data-code="AltLeft">Alt</div><div class="key space" data-code="Space">Space</div><div class="key" data-code="AltRight">Alt</div><div class="key" data-code="MetaRight">Win</div><div class="key" data-code="ContextMenu">Menu</div><div class="key" data-code="ControlRight">Ctrl</div><div class="key" data-code="ArrowLeft">←</div><div class="key" data-code="ArrowDown">↓</div><div class="key" data-code="ArrowRight">→</div><div class="key wide" data-code="Numpad0">0</div><div class="key" data-code="NumpadDecimal">.</div><div class="key" data-code="LaunchMail">Mail</div><div class="key" data-code="LaunchCalculator">Calc</div></div>
-        </div></div>
+        </div>
 
         <div class="mouse-pad">
             <div class="mouse" aria-label="mouse visualizer">
