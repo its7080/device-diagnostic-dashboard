@@ -9,15 +9,16 @@ if ($session_id === '') {
 
 $allKeys = [
     'Escape','F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12',
+    'PrintScreen','ScrollLock','Pause','MediaTrackPrevious','MediaPlayPause','MediaTrackNext','VolumeMute','VolumeDown','VolumeUp',
     'Backquote','Digit1','Digit2','Digit3','Digit4','Digit5','Digit6','Digit7','Digit8','Digit9','Digit0','Minus','Equal','Backspace',
+    'Insert','Home','PageUp','Delete','End','PageDown',
     'Tab','KeyQ','KeyW','KeyE','KeyR','KeyT','KeyY','KeyU','KeyI','KeyO','KeyP','BracketLeft','BracketRight','Backslash',
     'CapsLock','KeyA','KeyS','KeyD','KeyF','KeyG','KeyH','KeyJ','KeyK','KeyL','Semicolon','Quote','Enter',
     'ShiftLeft','KeyZ','KeyX','KeyC','KeyV','KeyB','KeyN','KeyM','Comma','Period','Slash','ShiftRight',
     'ControlLeft','MetaLeft','AltLeft','Space','AltRight','MetaRight','ContextMenu','ControlRight',
     'ArrowLeft','ArrowDown','ArrowRight','ArrowUp',
-    'NumLock','NumpadDivide','NumpadMultiply','NumpadSubtract','NumpadAdd','NumpadEnter',
-    'VolumeMute','VolumeDown','VolumeUp','MediaTrackPrevious','MediaPlayPause','MediaTrackNext','LaunchMail','LaunchCalculator','PrintScreen',
-    'MouseLeft','MouseMiddle','MouseRight'
+    'NumLock','NumpadDivide','NumpadMultiply','NumpadSubtract','Numpad7','Numpad8','Numpad9','NumpadAdd','Numpad4','Numpad5','Numpad6','Numpad1','Numpad2','Numpad3','Numpad0','NumpadDecimal','NumpadEnter',
+    'LaunchMail','LaunchCalculator','MouseLeft','MouseMiddle','MouseRight'
 ];
 
 $stmt = $pdo->prepare("SELECT key_code, COUNT(*) AS cnt FROM key_logs WHERE session_id = ? GROUP BY key_code");
