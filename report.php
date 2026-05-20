@@ -1,7 +1,7 @@
 <?php
 require_once 'config.php';
 
-$session_id = isset($_GET['session_id']) ? trim($_GET['session_id']) : '';
+$session_id = isset($_GET['session_id']) ? trim((string)$_GET['session_id']) : '';
 if ($session_id === '') {
     echo "No session_id provided. Open index.php and use the Missing Keys Report link for your session.";
     exit;
@@ -21,12 +21,21 @@ $allKeys = [
     'LaunchMail','LaunchCalculator','MouseLeft','MouseMiddle','MouseRight'
 ];
 
-$stmt = $pdo->prepare("SELECT key_code, COUNT(*) AS cnt FROM key_logs WHERE session_id = ? GROUP BY key_code");
+$stmt = $pdo->prepare('SELECT key_code, COUNT(*) AS cnt FROM key_logs WHERE session_id = ? GROUP BY key_code');
 $stmt->execute([$session_id]);
 $rows = $stmt->fetchAll();
+
 $counts = [];
-foreach ($rows as $r) $counts[$r['key_code']] = (int)$r['cnt'];
-$detectedCount = count($counts);
+foreach ($rows as $r) {
+    $counts[$r['key_code']] = (int)$r['cnt'];
+}
+
+// Backward-compatible variables (prevents legacy template notices).
+$detected = array_keys($counts);
+$detected_map = array_fill_keys($detected, true);
+$counts_map = $counts;
+
+$detectedCount = count($detected);
 $total = count($allKeys);
 $coverage = $total > 0 ? round(($detectedCount / $total) * 100, 1) : 0;
 ?>
@@ -34,7 +43,7 @@ $coverage = $total > 0 ? round(($detectedCount / $total) * 100, 1) : 0;
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Diagnostic Report — <?= htmlspecialchars($session_id) ?></title>
+<title>Missing Keys Report — <?= htmlspecialchars($session_id) ?></title>
 <style>
 body { font-family: Inter, system-ui, Arial, sans-serif; margin: 0; background: #eef2ff; color: #111827; padding: 20px; }
 .box { max-width: 980px; margin: 0 auto; background: #fff; border:1px solid #dbeafe; border-radius: 14px; padding: 18px; }
@@ -50,8 +59,8 @@ li { border-radius:8px; padding:10px; border:1px solid #e5e7eb; background:#fafa
 </head>
 <body>
 <div class="box">
-<h1>Keyboard & Mouse Diagnostic Report</h1>
-<p>Session ID: <strong><?= htmlspecialchars($session_id) ?></strong></p>
+<h1>Missing Keys Report</h1>
+<p>Session: <strong><?= htmlspecialchars($session_id) ?></strong> — total detected: <strong><?= $detectedCount ?></strong></p>
 <div class="grid">
     <div class="stat"><div>Total mapped keys</div><strong><?= $total ?></strong></div>
     <div class="stat"><div>Detected keys</div><strong><?= $detectedCount ?></strong></div>
@@ -59,53 +68,14 @@ li { border-radius:8px; padding:10px; border:1px solid #e5e7eb; background:#fafa
 </div>
 <p><span class="badge">Tip</span> Multimedia keys can be blocked by OS/browser shortcuts.</p>
 <ul>
-<?php foreach ($allKeys as $code): $ok = isset($counts[$code]); ?>
-<li class="<?= $ok ? 'ok' : 'missing' ?>"><?= $ok ? '✔' : '✘' ?> <?= htmlspecialchars($code) ?><?php if ($ok): ?><span class="count"><?= $counts[$code] ?></span><?php endif; ?></li>
+<?php foreach ($allKeys as $code): $ok = isset($detected_map[$code]); ?>
+<li class="<?= $ok ? 'ok' : 'missing' ?>"><?= $ok ? '✔' : '✘' ?> <?= htmlspecialchars($code) ?><?php if ($ok): ?><span class="count"><?= $counts_map[$code] ?></span><?php endif; ?></li>
 <?php endforeach; ?>
 </ul>
 </div>
 </body>
 </html>
 
-        min-width: 220px;
-        padding: 10px;
-        border-radius: 6px;
-        border: 1px solid #eee;
-        background: #fafafa
-    }
-
-    .ok {
-        border-color: #10b981;
-        background: #ecfdf5
-    }
-
-    .missing {
-        border-color: #f87171;
-        background: #fff5f5
-    }
-
-    .count {
-        float: right;
-        color: #334155;
-        font-weight: 600
-    }
-
-    .actions {
-        margin-top: 12px
-    }
-
-    a.button {
-        display: inline-block;
-        padding: 8px 12px;
-        border-radius: 6px;
-        background: #2563eb;
-        color: #fff;
-        text-decoration: none
-    }
-    </style>
-</head>
-
-<body>
     <div class="box">
         <h1>Missing Keys Report</h1>
         <div class="legend">Session: <strong><?= htmlspecialchars($session_id) ?></strong> — total detected:
