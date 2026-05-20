@@ -76,41 +76,4 @@ li { border-radius:8px; padding:10px; border:1px solid #e5e7eb; background:#fafa
 </body>
 </html>
 
-    <div class="box">
-        <h1>Missing Keys Report</h1>
-        <div class="legend">Session: <strong><?= htmlspecialchars($session_id) ?></strong> — total detected:
-            <strong><?= count($detected) ?></strong></div>
-
-        <div class="actions">
-            <a class="button" href="index.php" target="_blank">Back to Tester</a>
-            &nbsp;
-
-        </div>
-
-        <ul class="checklist" style="margin-top:12px">
-            <?php foreach ($allKeys as $code): 
-         $is = isset($detected_map[$code]);
-      ?>
-            <li class="<?= $is ? 'ok' : 'missing' ?>">
-                <?php if ($is): ?>
-                ✔ <?= htmlspecialchars($code) ?>
-                <span class="count"><?= isset($counts_map[$code]) ? $counts_map[$code] : '1' ?></span>
-                <?php else: ?>
-                ✘ <?= htmlspecialchars($code) ?>
-                <?php endif; ?>
-            </li>
-            <?php endforeach; ?>
-        </ul>
-
-        <div style="margin-top:12px;color:#555">
-            <strong>Notes:</strong>
-            <ul>
-                <li>Browsers and OSes differ in which multimedia keys are exposed to web pages. If a key is not marked
-                    OK, try another browser or make sure the key is not captured by the OS or another app.</li>
-                <li>You can expand the canonical list in <code>report.php</code> to include more codes.</li>
-            </ul>
-        </div>
-    </div>
-</body>
-
-</html>
+    
