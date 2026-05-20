@@ -1,81 +1,72 @@
-<?php
-// report.php
-require_once 'config.php';
-
-$session_id = isset($_GET['session_id']) ? trim($_GET['session_id']) : '';
-if ($session_id === '') {
-    echo "No session_id provided. Open index.php and use the 'Missing Keys Report' link for your session.";
-    exit;
-}
-
-// canonical list of keys to check (extend as needed)
-$allKeys = [
-    'Backquote','Digit1','Digit2','Digit3','Digit4','Digit5','Digit6','Digit7','Digit8','Digit9','Digit0','Minus','Equal','Backspace',
-    'Tab','KeyQ','KeyW','KeyE','KeyR','KeyT','KeyY','KeyU','KeyI','KeyO','KeyP','BracketLeft','BracketRight','Backslash',
-    'CapsLock','KeyA','KeyS','KeyD','KeyF','KeyG','KeyH','KeyJ','KeyK','KeyL','Semicolon','Quote','Enter',
-    'ShiftLeft','KeyZ','KeyX','KeyC','KeyV','KeyB','KeyN','KeyM','Comma','Period','Slash','ShiftRight',
-    'ControlLeft','MetaLeft','AltLeft','Space','AltRight','MetaRight','ContextMenu','ControlRight',
-    // Multimedia / special
-    'VolumeMute','VolumeDown','VolumeUp',
-    'MediaTrackPrevious','MediaPlayPause','MediaTrackNext',
-    'LaunchMail','LaunchApp1','LaunchApp2','LaunchCalculator',
-    'BrightnessDown','BrightnessUp','PrintScreen','ScrollLock','Pause'
-];
-
-// Get distinct detected keys for session
-$stmt = $pdo->prepare("SELECT DISTINCT key_code FROM key_logs WHERE session_id = ?");
-$stmt->execute([ $session_id ]);
-$detected = $stmt->fetchAll(PDO::FETCH_COLUMN);
-$detected_map = array_flip($detected);
-
-// Optional: fetch counts per code (for showing how many times pressed)
-$countStmt = $pdo->prepare("SELECT key_code, COUNT(*) AS cnt FROM key_logs WHERE session_id = ? GROUP BY key_code");
-$countStmt->execute([$session_id]);
-$counts = $countStmt->fetchAll();
-$counts_map = [];
-foreach ($counts as $r) $counts_map[$r['key_code']] = $r['cnt'];
-?>
-<!doctype html>
-<html>
-
-<head>
-    <meta charset="utf-8" />
-    <title>Missing Keys Report — <?= htmlspecialchars($session_id) ?></title>
-    <style>
-    body {
-        font-family: Arial, Helvetica, sans-serif;
-        background: #f4f6fb;
-        padding: 18px
-    }
-
-    .box {
-        background: #fff;
-        padding: 16px;
-        border-radius: 8px;
-        max-width: 900px;
-        margin: 0 auto;
-        border: 1px solid #e6eef8
-    }
-
-    h1 {
-        margin: 0 0 6px
-    }
-
-    .legend {
-        color: #555;
-        font-size: 14px;
-        margin-bottom: 12px
-    }
-
-    ul.checklist {
-        list-style: none;
-        padding: 0;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px
-    }
-
-    ul.checklist li {
+<?php
+require_once 'config.php';
+
+$session_id = isset($_GET['session_id']) ? trim($_GET['session_id']) : '';
+if ($session_id === '') {
+    echo "No session_id provided. Open index.php and use the Missing Keys Report link for your session.";
+    exit;
+}
+
+$allKeys = [
+    'Escape','F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12',
+    'PrintScreen','ScrollLock','Pause','MediaTrackPrevious','MediaPlayPause','MediaTrackNext','VolumeMute','VolumeDown','VolumeUp',
+    'Backquote','Digit1','Digit2','Digit3','Digit4','Digit5','Digit6','Digit7','Digit8','Digit9','Digit0','Minus','Equal','Backspace',
+    'Insert','Home','PageUp','Delete','End','PageDown',
+    'Tab','KeyQ','KeyW','KeyE','KeyR','KeyT','KeyY','KeyU','KeyI','KeyO','KeyP','BracketLeft','BracketRight','Backslash',
+    'CapsLock','KeyA','KeyS','KeyD','KeyF','KeyG','KeyH','KeyJ','KeyK','KeyL','Semicolon','Quote','Enter',
+    'ShiftLeft','KeyZ','KeyX','KeyC','KeyV','KeyB','KeyN','KeyM','Comma','Period','Slash','ShiftRight',
+    'ControlLeft','MetaLeft','AltLeft','Space','AltRight','MetaRight','ContextMenu','ControlRight',
+    'ArrowLeft','ArrowDown','ArrowRight','ArrowUp',
+    'NumLock','NumpadDivide','NumpadMultiply','NumpadSubtract','Numpad7','Numpad8','Numpad9','NumpadAdd','Numpad4','Numpad5','Numpad6','Numpad1','Numpad2','Numpad3','Numpad0','NumpadDecimal','NumpadEnter',
+    'LaunchMail','LaunchCalculator','MouseLeft','MouseMiddle','MouseRight'
+];
+
+$stmt = $pdo->prepare("SELECT key_code, COUNT(*) AS cnt FROM key_logs WHERE session_id = ? GROUP BY key_code");
+$stmt->execute([$session_id]);
+$rows = $stmt->fetchAll();
+$counts = [];
+foreach ($rows as $r) $counts[$r['key_code']] = (int)$r['cnt'];
+$detectedCount = count($counts);
+$total = count($allKeys);
+$coverage = $total > 0 ? round(($detectedCount / $total) * 100, 1) : 0;
+?>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Diagnostic Report — <?= htmlspecialchars($session_id) ?></title>
+<style>
+body { font-family: Inter, system-ui, Arial, sans-serif; margin: 0; background: #eef2ff; color: #111827; padding: 20px; }
+.box { max-width: 980px; margin: 0 auto; background: #fff; border:1px solid #dbeafe; border-radius: 14px; padding: 18px; }
+.grid { display:grid; grid-template-columns: repeat(3,minmax(140px,1fr)); gap:10px; }
+.stat { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px; }
+ul { list-style:none; padding:0; display:grid; grid-template-columns: repeat(auto-fill,minmax(220px,1fr)); gap:8px; }
+li { border-radius:8px; padding:10px; border:1px solid #e5e7eb; background:#fafafa; }
+.ok { background:#ecfdf5; border-color:#10b981; }
+.missing { background:#fef2f2; border-color:#ef4444; }
+.count { float:right; font-weight:700; color:#334155; }
+.badge { display:inline-block; border-radius:999px; padding:4px 8px; background:#dbeafe; color:#1d4ed8; font-weight:700; }
+</style>
+</head>
+<body>
+<div class="box">
+<h1>Keyboard & Mouse Diagnostic Report</h1>
+<p>Session ID: <strong><?= htmlspecialchars($session_id) ?></strong></p>
+<div class="grid">
+    <div class="stat"><div>Total mapped keys</div><strong><?= $total ?></strong></div>
+    <div class="stat"><div>Detected keys</div><strong><?= $detectedCount ?></strong></div>
+    <div class="stat"><div>Coverage</div><strong><?= $coverage ?>%</strong></div>
+</div>
+<p><span class="badge">Tip</span> Multimedia keys can be blocked by OS/browser shortcuts.</p>
+<ul>
+<?php foreach ($allKeys as $code): $ok = isset($counts[$code]); ?>
+<li class="<?= $ok ? 'ok' : 'missing' ?>"><?= $ok ? '✔' : '✘' ?> <?= htmlspecialchars($code) ?><?php if ($ok): ?><span class="count"><?= $counts[$code] ?></span><?php endif; ?></li>
+<?php endforeach; ?>
+</ul>
+</div>
+</body>
+</html>
+
         min-width: 220px;
         padding: 10px;
         border-radius: 6px;
