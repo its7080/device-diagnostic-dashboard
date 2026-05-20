@@ -1,5 +1,86 @@
 <?php
-// index.php
+require_once __DIR__ . '/../config.php';
+
+$allKeys = [
+    'Escape','F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12',
+    'PrintScreen','ScrollLock','Pause','MediaTrackPrevious','MediaPlayPause','MediaTrackNext','VolumeMute','VolumeDown','VolumeUp',
+    'Backquote','Digit1','Digit2','Digit3','Digit4','Digit5','Digit6','Digit7','Digit8','Digit9','Digit0','Minus','Equal','Backspace',
+    'Insert','Home','PageUp','Delete','End','PageDown',
+    'Tab','KeyQ','KeyW','KeyE','KeyR','KeyT','KeyY','KeyU','KeyI','KeyO','KeyP','BracketLeft','BracketRight','Backslash',
+    'CapsLock','KeyA','KeyS','KeyD','KeyF','KeyG','KeyH','KeyJ','KeyK','KeyL','Semicolon','Quote','Enter',
+    'ShiftLeft','KeyZ','KeyX','KeyC','KeyV','KeyB','KeyN','KeyM','Comma','Period','Slash','ShiftRight',
+    'ControlLeft','MetaLeft','AltLeft','Space','AltRight','MetaRight','ContextMenu','ControlRight',
+    'ArrowLeft','ArrowDown','ArrowRight','ArrowUp',
+    'NumLock','NumpadDivide','NumpadMultiply','NumpadSubtract','Numpad7','Numpad8','Numpad9','NumpadAdd','Numpad4','Numpad5','Numpad6','Numpad1','Numpad2','Numpad3','Numpad0','NumpadDecimal','NumpadEnter',
+    'LaunchMail','LaunchCalculator','MouseLeft','MouseMiddle','MouseRight'
+];
+
+$mode = isset($_GET['mode']) ? (string) $_GET['mode'] : 'ui';
+
+if ($mode === 'log') {
+    header('Content-Type: application/json');
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        http_response_code(405);
+        echo json_encode(['ok' => false, 'error' => 'Method not allowed']);
+        exit;
+    }
+
+    $data = json_decode((string) file_get_contents('php://input'), true);
+    if (!is_array($data)) {
+        http_response_code(400);
+        echo json_encode(['ok' => false, 'error' => 'Invalid JSON']);
+        exit;
+    }
+
+    $items = isset($data['items']) && is_array($data['items']) ? $data['items'] : [$data];
+    $stmt = $pdo->prepare('INSERT INTO key_logs (session_id, key_code, key_value, created_at) VALUES (?, ?, ?, NOW())');
+
+    $inserted = 0;
+    foreach ($items as $item) {
+        $session = isset($item['session_id']) ? trim((string) $item['session_id']) : '';
+        $code = isset($item['key_code']) ? trim((string) $item['key_code']) : '';
+        $value = isset($item['key_value']) ? (string) $item['key_value'] : $code;
+        if ($session === '' || $code === '') {
+            continue;
+        }
+        $stmt->execute([$session, $code, $value]);
+        $inserted++;
+    }
+
+    echo json_encode(['ok' => true, 'inserted' => $inserted]);
+    exit;
+}
+
+if ($mode === 'report') {
+    $sessionId = isset($_GET['session_id']) ? trim((string) $_GET['session_id']) : '';
+    if ($sessionId === '') {
+        echo 'No session_id provided. Open keyboardandmouse/index.php and use the Missing Keys Report link for your session.';
+        exit;
+    }
+
+    $stmt = $pdo->prepare('SELECT key_code, COUNT(*) AS cnt FROM key_logs WHERE session_id = ? GROUP BY key_code');
+    $stmt->execute([$sessionId]);
+    $rows = $stmt->fetchAll();
+
+    $counts = [];
+    foreach ($rows as $row) {
+        $counts[$row['key_code']] = (int) $row['cnt'];
+    }
+
+    $detected = array_keys($counts);
+    $detectedMap = array_fill_keys($detected, true);
+    $detectedCount = count($detected);
+    $total = count($allKeys);
+    $coverage = $total > 0 ? round(($detectedCount / $total) * 100, 1) : 0;
+    ?>
+    <!doctype html>
+    <html lang="en">
+    <head><meta charset="utf-8"><title>Missing Keys Report — <?= htmlspecialchars($sessionId) ?></title>
+    <style>body{font-family:Inter,system-ui,Arial,sans-serif;margin:0;background:#eef2ff;color:#111827;padding:20px}.box{max-width:980px;margin:0 auto;background:#fff;border:1px solid #dbeafe;border-radius:14px;padding:18px}.grid{display:grid;grid-template-columns:repeat(3,minmax(140px,1fr));gap:10px}.stat{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px}ul{list-style:none;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}li{border-radius:8px;padding:10px;border:1px solid #e5e7eb;background:#fafafa}.ok{background:#ecfdf5;border-color:#10b981}.missing{background:#fef2f2;border-color:#ef4444}.count{float:right;font-weight:700;color:#334155}.badge{display:inline-block;border-radius:999px;padding:4px 8px;background:#dbeafe;color:#1d4ed8;font-weight:700}</style></head>
+    <body><div class="box"><h1>Missing Keys Report</h1><p>Session: <strong><?= htmlspecialchars($sessionId) ?></strong> — total detected: <strong><?= $detectedCount ?></strong></p><div class="grid"><div class="stat"><div>Total mapped keys</div><strong><?= $total ?></strong></div><div class="stat"><div>Detected keys</div><strong><?= $detectedCount ?></strong></div><div class="stat"><div>Coverage</div><strong><?= $coverage ?>%</strong></div></div><p><span class="badge">Tip</span> Multimedia keys can be blocked by OS/browser shortcuts.</p><ul><?php foreach ($allKeys as $code): $ok = isset($detectedMap[$code]); ?><li class="<?= $ok ? 'ok' : 'missing' ?>"><?= $ok ? '✔' : '✘' ?> <?= htmlspecialchars($code) ?><?php if ($ok): ?><span class="count"><?= $counts[$code] ?></span><?php endif; ?></li><?php endforeach; ?></ul></div></body></html>
+    <?php
+    exit;
+}
 ?>
 <!doctype html>
 <html lang="en">
@@ -118,7 +199,7 @@
     const sessionId = Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
     const reportLink = document.getElementById('reportLink');
     const sessionBox = document.getElementById('sessionBox');
-    reportLink.href = `report.php?session_id=${encodeURIComponent(sessionId)}`;
+    reportLink.href = `index.php?mode=report&session_id=${encodeURIComponent(sessionId)}`;
     sessionBox.textContent = sessionId;
 
     const els = {
@@ -137,7 +218,7 @@
         o.type = 'triangle'; o.frequency.value = 220; g.gain.value = 0.02; o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.03);
     }
     function queueLog(item) { queue.push(item); if (!timer) timer = setTimeout(flush, 120); }
-    function flush() { const items = queue.splice(0); timer = null; fetch('log_key.php', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({items}) }).catch(() => {}); }
+    function flush() { const items = queue.splice(0); timer = null; fetch('index.php?mode=log', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({items}) }).catch(() => {}); }
     function updateStats() { const keys = Object.keys(counts); els.unique.textContent = keys.length; els.counts.textContent = keys.length ? keys.map(k => `${k}: ${counts[k]}`).join(' • ') : 'No keys pressed yet.'; }
 
     function hit(code, keyValue) {
@@ -162,318 +243,4 @@
 })();
 </script>
 </body>
-</html>
-
-                    
-
-
-
-
-
-
-
-
-
-        <script>
-
-        (function() {
-
-            // Unique session id
-
-            const sessionId = Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
-
-
-
-            // Update report link
-
-            const reportLink = document.getElementById('reportLink');
-
-            reportLink.href = `report.php?session_id=${encodeURIComponent(sessionId)}`;
-
-
-
-            const lastKeyEl = document.getElementById('lastKey');
-
-            const uniqueCountEl = document.getElementById('uniqueCount');
-
-            const countsEl = document.getElementById('counts');
-
-            const keyboard = document.getElementById('keyboard');
-
-            const resetBtn = document.getElementById('resetBtn');
-
-            const clearCountsBtn = document.getElementById('clearCountsBtn');
-
-            const markAllBtn = document.getElementById('markAllBtn');
-
-
-
-            // map of code->element
-
-            const keyEls = {};
-
-            keyboard.querySelectorAll('[data-code]').forEach(el => {
-
-                keyEls[el.dataset.code] = el;
-
-                el.style.cursor = 'pointer';
-
-                el.addEventListener('mousedown', () => {
-
-                    // simulate press
-
-                    handleKey({
-
-                        code: el.dataset.code,
-
-                        key: el.textContent.trim()
-
-                    });
-
-                    setTimeout(() => handleKeyUp({
-
-                        code: el.dataset.code
-
-                    }), 120);
-
-                });
-
-            });
-
-
-
-            const counts = {}; // code -> count
-
-
-
-            function updateStats() {
-
-                const keys = Object.keys(counts);
-
-                uniqueCountEl.textContent = keys.length;
-
-                countsEl.textContent = keys.length ? keys.map(k => `${k}: ${counts[k]}`).join(' • ') :
-
-                    'No keys pressed yet.';
-
-            }
-
-
-
-            // batching logs briefly so we don't fire too many requests
-
-            let queue = [];
-
-            let timer = null;
-
-
-
-            function queueLog(payload) {
-
-                queue.push(payload);
-
-                if (!timer) timer = setTimeout(flushQueue, 150);
-
-            }
-
-
-
-            function flushQueue() {
-
-                const items = queue.splice(0);
-
-                timer = null;
-
-                items.forEach(item => {
-
-                    fetch('log_key.php', {
-
-                        method: 'POST',
-
-                        headers: {
-
-                            'Content-Type': 'application/json'
-
-                        },
-
-                        body: JSON.stringify(item)
-
-                    }).catch(() => {
-
-                        /* ignore errors silently */
-
-                    });
-
-                });
-
-            }
-
-
-
-            function handleKey(e) {
-
-                const code = e.code || (typeof e === 'string' ? e : 'Unknown');
-
-                const keyVal = e.key ?? code;
-
-                lastKeyEl.textContent = `${keyVal} · ${code}`;
-
-
-
-                // UI highlight
-
-                const el = keyEls[code];
-
-                if (el) {
-
-                    el.classList.add('pressed');
-
-                    el.classList.add('ok');
-
-                }
-
-
-
-                counts[code] = (counts[code] || 0) + 1;
-
-                updateStats();
-
-
-
-                // send log to server
-
-                queueLog({
-
-                    session_id: sessionId,
-
-                    key_code: code,
-
-                    key_value: String(keyVal)
-
-                });
-
-            }
-
-
-
-            function handleKeyUp(e) {
-
-                const code = e.code;
-
-                const el = keyEls[code];
-
-                if (el) el.classList.remove('pressed');
-
-            }
-
-
-
-            window.addEventListener('keydown', e => {
-
-                // prevent default scrolling for space etc. only when not in an input
-
-                if (!['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
-
-                    e.preventDefault();
-
-                }
-
-                handleKey(e);
-
-            }, {
-
-                passive: false
-
-            });
-
-
-
-            window.addEventListener('keyup', e => {
-
-                handleKeyUp(e);
-
-            });
-
-
-
-            resetBtn.addEventListener('click', () => {
-
-                Object.values(keyEls).forEach(k => k.classList.remove('ok', 'pressed'));
-
-                for (let p in counts) delete counts[p];
-
-                lastKeyEl.textContent = '—';
-
-                updateStats();
-
-            });
-
-
-
-            clearCountsBtn.addEventListener('click', () => {
-
-                for (let p in counts) delete counts[p];
-
-                updateStats();
-
-            });
-
-
-
-            markAllBtn.addEventListener('click', () => {
-
-                Object.values(keyEls).forEach(k => k.classList.add('ok'));
-
-            });
-
-
-
-            updateStats();
-
-        })();
-
-        </script>
-
-</body>
-
-
-
-<footer style="background:#111; color:#eee; padding:20px 10px; text-align:center; font-size:14px;">
-
-    <p>
-
-        &copy; <span id="year"></span> Keyboard Tester Tool — Created by
-
-        <strong>Anupam Manna</strong>
-
-        <span style="color:#888;">(Data Scientist &amp; Software Developer)</span>
-
-    </p>
-
-    <p>
-
-        📧 Email: <a href="mailto:contact@keyboard-tester.free.nf" style="color:#00bfff;">am7059141480@gmail.com</a> |
-
-        | 📱 Phone: <span>+91</span><span>7059</span><span>141480</span>
-
-    </p>
-
-    <p>
-
-        <a href="https://keyboard-tester.free.nf/privacy-policy" style="color:#bbb;">Privacy Policy</a> |
-
-        <a href="https://keyboard-tester.free.nf/terms" style="color:#bbb;">Terms of Service</a>
-
-    </p>
-
-    <script>
-
-    document.getElementById("year").textContent = new Date().getFullYear();
-
-    </script>
-
-</footer>
-
-
-
 </html>
