@@ -1,296 +1,104 @@
-<?php
-// index.php
-// Frontend is client-side JS. Place config.php & log_key.php in same folder.
-?>
-<!doctype html>
-<html lang="en">
-
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-
-    <title>Keyboard Tester | Online Keyboard Test with Multimedia & Missing Keys Report</title>
-    <meta name="description"
-        content="Test your keyboard online — including multimedia keys, function keys, numpad, arrow keys, and mouse buttons. Instantly see missing keys in the report. Created by Anupam Manna (Data Scientist & Software Developer).">
-    <meta name="keywords"
-        content="keyboard tester, online keyboard test, multimedia key test, missing keys report, keyboard checker, numpad tester, arrow key test, mouse button test, function keys, F1-F12 test, spacebar test, laptop keyboard test, Anupam Manna">
-    <meta name="author" content="Anupam Manna">
-    <meta name="robots" content="index, follow">
-    <meta name="language" content="English">
-
-    <!-- Open Graph -->
-    <meta property="og:title" content="Keyboard Tester — Test All Keys & Get Missing Keys Report">
-    <meta property="og:description"
-        content="Free online keyboard tester to check every key including multimedia, mouse buttons, and numpad. Get a Missing Keys Report instantly. Created by Anupam Manna.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://keyboard-tester.free.nf/">
-    <meta property="og:image" content="https://keyboard-tester.free.nf/assets/keyboard-tester-preview.png">
-    <meta property="og:site_name" content="Keyboard Tester Tool">
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Keyboard Tester — Online Multimedia & Missing Keys Report">
-    <meta name="twitter:description"
-        content="Check your keyboard online for all keys including multimedia, arrow, numpad, and mouse buttons. Created by Anupam Manna.">
-    <meta name="twitter:image" content="https://keyboard-tester.free.nf/assets/keyboard-tester-preview.png">
-
-    <!-- Canonical URL -->
-    <link rel="canonical" href="https://keyboard-tester.free.nf/">
-
-    <!-- Favicon -->
-    <link rel="icon" href="https://keyboard-tester.free.nf/favicon.ico" type="image/x-icon">
-
-    <!-- Structured Data -->
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "name": "Keyboard Tester",
-        "url": "https://keyboard-tester.free.nf/",
-        "image": "https://keyboard-tester.free.nf/assets/keyboard-tester-preview.png",
-        "description": "Free online keyboard testing tool that checks all keys including multimedia keys, function keys, numpad, mouse buttons, and generates a Missing Keys Report.",
-        "applicationCategory": "UtilityApplication",
-        "operatingSystem": "Any",
-        "creator": {
-            "@type": "Person",
-            "name": "Anupam Manna",
-            "jobTitle": "Data Scientist & Software Developer",
-            "url": "https://keyboard-tester.free.nf/"
-        }
-    }
-    </script>
-
-
-    <style>
-    :root {
-        --bg: #071029;
-        --muted: #94a3b8;
-        --accent: #60a5fa
-    }
-
-    body {
-        font-family: Inter, system-ui, Roboto, Arial;
-        margin: 0;
-        padding: 18px;
-        background: linear-gradient(180deg, #071021, #081426);
-        color: #e6eef8
-    }
-
-    .container {
-        max-width: 1100px;
-        margin: 0 auto
-    }
-
-    .container-q {
-        display: flex;
-        justify-content: center;
-        width: 100%;
-        padding: 16px 0;
-    }
-
-    .card {
-        background: rgba(255, 255, 255, 0.02);
-        padding: 16px;
-        border-radius: 10px
-    }
-
-    h1 {
-        margin: 0 0 6px
-    }
-
-    p.lead {
-        color: var(--muted);
-        margin: 0 0 12px
-    }
-
-    .controls {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin-bottom: 12px
-    }
-
-    button,
-    a.button {
-        padding: 8px 12px;
-        border-radius: 8px;
-        border: 0;
-        background: var(--accent);
-        color: #fff;
-        text-decoration: none;
-        cursor: pointer
-    }
-
-    .keyboard {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        user-select: none
-    }
-
-    .row {
-        display: flex;
-        gap: 8px;
-        justify-content: center;
-        flex-wrap: wrap
-    }
-
-    .key {
-        min-width: 36px;
-        padding: 8px 10px;
-        background: rgba(255, 255, 255, 0.02);
-        border-radius: 8px;
-        text-align: center;
-        font-size: 13px;
-        border: 1px solid rgba(255, 255, 255, 0.03)
-    }
-
-    .key.wide {
-        min-width: 88px
-    }
-
-    .key.space {
-        min-width: 320px
-    }
-
-    .key.pressed {
-        background: linear-gradient(90deg, var(--accent), #2563eb);
-        box-shadow: 0 6px 18px rgba(37, 99, 235, 0.18);
-        transform: translateY(-1px)
-    }
-
-    .key.ok {
-        border: 1px solid rgba(16, 185, 129, 0.12)
-    }
-
-    .stat {
-        background: rgba(255, 255, 255, 0.02);
-        padding: 10px;
-        border-radius: 8px;
-        min-width: 160px;
-        margin-top: 12px;
-        color: var(--muted)
-    }
-
-    .note {
-        color: var(--muted);
-        margin-top: 10px;
-        font-size: 13px
-    }
-
-    @media (max-width:700px) {
-        .key.space {
-            min-width: 180px
-        }
-    }
-    </style>
-</head>
-
-<body>
-    <div class="container">
-        <div class="card">
-            <h1>Keyboard Tester</h1>
-            <p class="lead">Press keys (including multimedia). Results log to the server. When finished, open the
-                Missing Keys Report for this session.</p>
-
-            <div class="controls">
-                <button id="resetBtn">Reset UI</button>
-                <button id="clearCountsBtn">Clear Counts</button>
-                <button id="markAllBtn">Mark All OK</button>
-                <a id="reportLink" class="button" href="#" target="_blank" style="background:#10b981">Missing Keys
-                    Report</a>
-                <!-- <a class="button" href="view_logs.php" target="_blank" style="background:#2563eb">View All Logs</a> -->
-            </div>
-
-            <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
-                <div>
-                    <div style="font-weight:700;font-size:18px" id="lastKey">—</div>
-                    <div style="color:var(--muted)">Last key pressed (value · code)</div>
-                </div>
-                <div style="margin-left:auto;text-align:right">
-                    <div style="color:var(--muted)">Unique keys detected</div>
-                    <div id="uniqueCount" style="font-weight:700;font-size:18px">0</div>
-                </div>
-            </div>
-
-            <div id="keyboard" class="keyboard">
-                <!-- Row 1 -->
-                <div class="row">
-                    <div class="key" data-code="Escape">Esc</div>
-                    <div class="key" data-code="F1">F1</div>
-                    <div class="key" data-code="F2">F2</div>
-                    <div class="key" data-code="F3">F3</div>
-                    <div class="key" data-code="F4">F4</div>
-                    <div class="key" data-code="F5">F5</div>
-                    <div class="key" data-code="F6">F6</div>
-                    <div class="key" data-code="F7">F7</div>
-                    <div class="key" data-code="F8">F8</div>
-                    <div class="key" data-code="F9">F9</div>
-                    <div class="key" data-code="F10">F10</div>
-                    <div class="key" data-code="F11">F11</div>
-                    <div class="key" data-code="F12">F12</div>
-
-                </div>
-
-                <!-- QWERTY rows (your existing code) -->
-                <div class="row">
-                    <div class="key" data-code="Backquote">~ `</div>
-                    <div class="key" data-code="Digit1">1</div>
-                    <div class="key" data-code="Digit2">2</div>
-                    <div class="key" data-code="Digit3">3</div>
-                    <div class="key" data-code="Digit4">4</div>
-                    <div class="key" data-code="Digit5">5</div>
-                    <div class="key" data-code="Digit6">6</div>
-                    <div class="key" data-code="Digit7">7</div>
-                    <div class="key" data-code="Digit8">8</div>
-                    <div class="key" data-code="Digit9">9</div>
-                    <div class="key" data-code="Digit0">0</div>
-                    <div class="key" data-code="Minus">- _</div>
-                    <div class="key" data-code="Equal">= +</div>
-                    <div class="key wide" data-code="Backspace">Backspace</div>
-
-
-                </div>
-
-                <div class="row">
-                    <div class="key wide" data-code="Tab">Tab</div>
-                    <div class="key" data-code="KeyQ">Q</div>
-                    <div class="key" data-code="KeyW">W</div>
-                    <div class="key" data-code="KeyE">E</div>
-                    <div class="key" data-code="KeyR">R</div>
-                    <div class="key" data-code="KeyT">T</div>
-                    <div class="key" data-code="KeyY">Y</div>
-                    <div class="key" data-code="KeyU">U</div>
-                    <div class="key" data-code="KeyI">I</div>
-                    <div class="key" data-code="KeyO">O</div>
-                    <div class="key" data-code="KeyP">P</div>
-                    <div class="key" data-code="BracketLeft">[ {</div>
-                    <div class="key" data-code="BracketRight">] }</div>
-                    <div class="key" data-code="Backslash">\ |</div>
-
-
-                </div>
-
-                <div class="row">
-                    <div class="key wide" data-code="CapsLock">Caps</div>
-                    <div class="key" data-code="KeyA">A</div>
-                    <div class="key" data-code="KeyS">S</div>
-                    <div class="key" data-code="KeyD">D</div>
-                    <div class="key" data-code="KeyF">F</div>
-                    <div class="key" data-code="KeyG">G</div>
-                    <div class="key" data-code="KeyH">H</div>
-                    <div class="key" data-code="KeyJ">J</div>
-                    <div class="key" data-code="KeyK">K</div>
-                    <div class="key" data-code="KeyL">L</div>
-                    <div class="key" data-code="Semicolon">; :</div>
-                    <div class="key" data-code="Quote">' "</div>
-                    <div class="key wide" data-code="Enter">Enter</div>
-                </div>
-
-                <div class="row">
-                    <div class="key wide" data-code="ShiftLeft">Shift</div>
-                    <div class="key" data-code="KeyZ">Z</div>
-                    <div class="key" data-code="KeyX">X</div>
+<?php
+// Ultimate Device Diagnostic Suite (single-page starter)
+?>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Ultimate Device Diagnostic Suite</title>
+  <style>
+    :root{--bg:#0b1020;--card:#141b33;--text:#e9eefc;--muted:#9fb0d9;--accent:#4f8cff;--ok:#22c55e;--warn:#f59e0b}
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,Arial,sans-serif;background:linear-gradient(180deg,#0b1020,#070b17);color:var(--text)}
+    .wrap{max-width:1200px;margin:0 auto;padding:20px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+    .card{background:var(--card);border:1px solid #1f2a4e;border-radius:12px;padding:14px}.card h3{margin:0 0 10px}
+    .pill{display:inline-block;background:#1f2a4e;color:var(--muted);border-radius:999px;padding:4px 8px;font-size:12px;margin:2px}
+    .btn{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:8px 12px;cursor:pointer}
+    #mousePad{height:170px;border:1px dashed #39508a;border-radius:8px;position:relative;overflow:hidden}
+    .dot{position:absolute;width:10px;height:10px;border-radius:50%;background:#f43f5e;opacity:.7;transform:translate(-50%,-50%)}
+    .keys{display:grid;grid-template-columns:repeat(10,1fr);gap:6px}.key{padding:6px;text-align:center;border:1px solid #2a3869;border-radius:6px}
+    .key.on{background:#1e3a8a;border-color:#60a5fa}
+    canvas{width:100%;height:120px;background:#0a1124;border:1px solid #2a3869;border-radius:8px}
+    video{width:100%;border-radius:8px;border:1px solid #2a3869}.muted{color:var(--muted);font-size:14px}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🖥️ Ultimate Device Diagnostic Suite</h1>
+  <p class="muted">Starter portfolio project in <strong>PHP + JavaScript</strong>: mouse, keyboard, mic, camera, monitor, and network diagnostics.</p>
+
+  <div class="grid">
+    <section class="card">
+      <h3>1) Mouse Button + CPS Tester</h3>
+      <div><span class="pill" id="lc">Left: 0</span><span class="pill" id="rc">Right: 0</span><span class="pill" id="dc">Double: 0</span><span class="pill" id="sc">Scroll: 0</span><span class="pill" id="cps">CPS: 0</span></div>
+      <p class="muted">Click / right-click / double-click and drag inside pad.</p>
+      <div id="mousePad"></div>
+    </section>
+
+    <section class="card">
+      <h3>2) Keyboard Testing</h3>
+      <div class="keys" id="keys"></div>
+      <p class="muted">Ghosting/basic rollover visibility + typing speed sample.</p>
+      <div class="pill" id="kCount">Unique Keys: 0</div>
+    </section>
+
+    <section class="card">
+      <h3>3) Microphone + Speaker Test</h3>
+      <button class="btn" id="micBtn">Start Microphone</button>
+      <canvas id="micCanvas" width="500" height="120"></canvas>
+      <p class="muted" id="noise">Noise: --</p>
+      <button class="btn" id="beepBtn">Play Left/Right Beep</button>
+    </section>
+
+    <section class="card">
+      <h3>4) Webcam Testing</h3>
+      <button class="btn" id="camBtn">Start Camera</button>
+      <video id="cam" autoplay playsinline muted></video>
+      <p class="muted" id="camInfo">FPS / Resolution: --</p>
+    </section>
+
+    <section class="card">
+      <h3>5) Monitor Dead Pixel Tester</h3>
+      <button class="btn" onclick="document.body.style.background='#000'">Black</button>
+      <button class="btn" onclick="document.body.style.background='#fff';document.body.style.color='#111'">White</button>
+      <button class="btn" onclick="document.body.style.background='red'">Red</button>
+      <button class="btn" onclick="document.body.style.background='green'">Green</button>
+      <button class="btn" onclick="document.body.style.background='blue'">Blue</button>
+    </section>
+
+    <section class="card">
+      <h3>6) Browser/Network Diagnostics</h3>
+      <div id="env"></div>
+    </section>
+  </div>
+</div>
+<script>
+const pad=document.getElementById('mousePad');let left=0,right=0,dbl=0,scroll=0,clickTimes=[];
+const set=(id,v)=>document.getElementById(id).textContent=v;
+pad.addEventListener('click',e=>{left++;clickTimes.push(Date.now());dot(e);});
+pad.addEventListener('contextmenu',e=>{e.preventDefault();right++;dot(e);});
+pad.addEventListener('dblclick',e=>{dbl++;dot(e);});
+pad.addEventListener('wheel',()=>scroll++);
+function dot(e){const d=document.createElement('div');d.className='dot';d.style.left=e.offsetX+'px';d.style.top=e.offsetY+'px';pad.appendChild(d);setTimeout(()=>d.remove(),1500)}
+setInterval(()=>{const now=Date.now();clickTimes=clickTimes.filter(t=>now-t<1000);set('lc',`Left: ${left}`);set('rc',`Right: ${right}`);set('dc',`Double: ${dbl}`);set('sc',`Scroll: ${scroll}`);set('cps',`CPS: ${clickTimes.length}`)},100);
+
+const codes=['KeyQ','KeyW','KeyE','KeyR','KeyT','KeyY','KeyU','KeyI','KeyO','KeyP','KeyA','KeyS','KeyD','KeyF','KeyG','KeyH','KeyJ','KeyK','KeyL','Enter','KeyZ','KeyX','KeyC','KeyV','KeyB','KeyN','KeyM','Space','ShiftLeft','ControlLeft'];
+const box=document.getElementById('keys');const seen=new Set();codes.forEach(c=>{const el=document.createElement('div');el.className='key';el.id=c;el.textContent=c;box.appendChild(el)});
+addEventListener('keydown',e=>{seen.add(e.code);const el=document.getElementById(e.code);if(el)el.classList.add('on');document.getElementById('kCount').textContent='Unique Keys: '+seen.size});
+addEventListener('keyup',e=>{const el=document.getElementById(e.code);if(el)el.classList.remove('on')});
+
+let analyser,dataArray,audioCtx;document.getElementById('micBtn').onclick=async()=>{try{const s=await navigator.mediaDevices.getUserMedia({audio:true});audioCtx=new AudioContext();const src=audioCtx.createMediaStreamSource(s);analyser=audioCtx.createAnalyser();analyser.fftSize=256;src.connect(analyser);dataArray=new Uint8Array(analyser.frequencyBinCount);drawMic()}catch(e){alert('Mic denied: '+e.message)}};
+function drawMic(){if(!analyser)return;analyser.getByteFrequencyData(dataArray);const c=document.getElementById('micCanvas'),x=c.getContext('2d');x.clearRect(0,0,c.width,c.height);let sum=0;for(let i=0;i<dataArray.length;i++){const v=dataArray[i];sum+=v;x.fillStyle='#4f8cff';x.fillRect(i*2,c.height-v/2,1,v/2)}document.getElementById('noise').textContent='Noise: '+Math.round(sum/dataArray.length);requestAnimationFrame(drawMic)}
+
+document.getElementById('beepBtn').onclick=()=>{const ctx=new (window.AudioContext||window.webkitAudioContext)();const osc=ctx.createOscillator();const pan=ctx.createStereoPanner();osc.connect(pan).connect(ctx.destination);osc.frequency.value=540;osc.start();pan.pan.value=-1;setTimeout(()=>pan.pan.value=1,300);setTimeout(()=>osc.stop(),600)};
+
+document.getElementById('camBtn').onclick=async()=>{try{const stream=await navigator.mediaDevices.getUserMedia({video:true});const v=document.getElementById('cam');v.srcObject=stream;const tr=stream.getVideoTracks()[0].getSettings();document.getElementById('camInfo').textContent=`Resolution: ${tr.width}x${tr.height} | FPS: ${tr.frameRate||'n/a'}`}catch(e){alert('Camera denied: '+e.message)}};
+
+document.getElementById('env').innerHTML=`<div class="pill">UA: ${navigator.userAgent}</div><div class="pill">Cookies: ${navigator.cookieEnabled}</div><div class="pill">Screen: ${screen.width}x${screen.height}</div><div class="pill">Language: ${navigator.language}</div><div class="pill">Online: ${navigator.onLine}</div>`;
+</script>
+</body>
+</html>
+
                     <div class="key" data-code="KeyC">C</div>
                     <div class="key" data-code="KeyV">V</div>
                     <div class="key" data-code="KeyB">B</div>
