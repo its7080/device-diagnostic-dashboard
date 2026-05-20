@@ -1,1 +1,3 @@
-# device-diagnostic-dashboard
+<?php
+header('Location: dasboard.php');
+exit;
