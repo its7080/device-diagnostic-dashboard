@@ -67,45 +67,6 @@ li { border-radius:8px; padding:10px; border:1px solid #e5e7eb; background:#fafa
 </body>
 </html>
 
-        min-width: 220px;
-        padding: 10px;
-        border-radius: 6px;
-        border: 1px solid #eee;
-        background: #fafafa
-    }
-
-    .ok {
-        border-color: #10b981;
-        background: #ecfdf5
-    }
-
-    .missing {
-        border-color: #f87171;
-        background: #fff5f5
-    }
-
-    .count {
-        float: right;
-        color: #334155;
-        font-weight: 600
-    }
-
-    .actions {
-        margin-top: 12px
-    }
-
-    a.button {
-        display: inline-block;
-        padding: 8px 12px;
-        border-radius: 6px;
-        background: #2563eb;
-        color: #fff;
-        text-decoration: none
-    }
-    </style>
-</head>
-
-<body>
     <div class="box">
         <h1>Missing Keys Report</h1>
         <div class="legend">Session: <strong><?= htmlspecialchars($session_id) ?></strong> — total detected:
