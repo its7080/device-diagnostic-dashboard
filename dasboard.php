@@ -1,0 +1,1 @@
+# device diagnostic main dashboard
